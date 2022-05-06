@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class UserFriendsResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,7 +18,6 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'user_name' => $this->user_name,
             'email' => $this->email,
-            'score' => $this->scores?->sum('score'),
         ];
     }
 }

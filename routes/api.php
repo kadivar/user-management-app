@@ -16,13 +16,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->group( function () {
-    Route::get('user/{user_id}', [AuthController::class, 'show']);
-    Route::post('user/{user_id}', [AuthController::class, 'update']);
-    Route::get('user/{user_id}/friends', [AuthController::class, 'get_friends']);
-    Route::post('user/{user_id}/friends', [AuthController::class, 'friends']);
-    Route::post('scores', [AuthController::class, 'friends']);
-});
-
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
+
+Route::middleware('auth:sanctum')->group( function () {
+    Route::get('user', [UserController::class, 'show']);
+    Route::post('user', [UserController::class, 'update']);
+    Route::get('friends', [UserController::class, 'get_friends']);
+    Route::post('friends', [UserController::class, 'update_friends']);
+});
+
+Route::middleware('auth:sanctum')->group( function () {
+    Route::post('users/{destination_user_id}/scores', [UserController::class, 'update_scores']);
+});

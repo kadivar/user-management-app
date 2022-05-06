@@ -24,6 +24,8 @@ class Score extends Model
      * @var array
      */
     protected $fillable = [
+        'source_id',
+        'user_id',
         'score',
     ];
 

@@ -88,8 +88,8 @@ class User extends Authenticatable
      *
      * @return HasMany
      */
-    public function score(): HasMany
+    public function scores(): HasMany
     {
-        return $this->hasMany(Score::class, 'user_id', 'id')->sum('score');
+        return $this->hasMany(Score::class, 'user_id', 'id');
     }
 }
