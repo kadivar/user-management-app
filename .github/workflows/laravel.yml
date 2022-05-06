@@ -1,0 +1,97 @@
+name: Testing Laravel with MySQL
+on:
+  push:
+    branches: [ main, feature/**, bug/**, enhancement/** ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  unit-test:
+    name: Laravel (PHP ${{ matrix.php-versions }})
+    runs-on: ubuntu-latest
+    env:
+      DB_DATABASE: test-db
+      DB_USERNAME: test-db
+      DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      BROADCAST_DRIVER: log
+      CACHE_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+    services:
+      mysql:
+        image: mysql/mysql-server:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_ROOT_HOST: "%"
+          MYSQL_DATABASE: test-db
+          MYSQL_USER: test-db
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions: [ '8.0', '8.1' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, dom, fileinfo, mysql
+          coverage: xdebug
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Prepare the application
+        run: |
+          php -r "file_exists('.env') || copy('.github.ci.env', '.env');"
+          php artisan key:generate
+
+      - name: Clear Config
+        run: php artisan config:clear
+
+      - name: Run Migration
+        run: php artisan migrate -v
+        env:
+          REDIS_PORT: 6379
+          DB_PORT: 3306
+          DB_DATABASE: test-db
+          DB_USERNAME: test-db
+          DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+
+      - name: Run Seeders
+        run: php artisan db:seed
+        env:
+          REDIS_PORT: 6379
+          DB_PORT: 3306
+          DB_DATABASE: test-db
+          DB_USERNAME: test-db
+          DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+
+      - name: Test with phpunit
+        run: vendor/bin/phpunit --coverage-text
+        env:
+          REDIS_PORT: 6379
+          DB_PORT: 3306
+          DB_DATABASE: test-db
+          DB_USERNAME: test-db
+          DB_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
