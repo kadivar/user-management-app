@@ -17,7 +17,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth:sanctum')->group( function () {
-    Route::resource('user/friends', UserController::class);
+    Route::get('user/{user_id}', [AuthController::class, 'show']);
+    Route::post('user/{user_id}', [AuthController::class, 'update']);
+    Route::get('user/{user_id}/friends', [AuthController::class, 'get_friends']);
+    Route::post('user/{user_id}/friends', [AuthController::class, 'friends']);
+    Route::post('scores', [AuthController::class, 'friends']);
 });
 
 Route::post('login', [AuthController::class, 'login']);

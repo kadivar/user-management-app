@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Validation\Validator;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserController extends Controller
 {
@@ -65,5 +66,14 @@ class UserController extends Controller
     {
         $user->delete();
         return $this->handleResponse([], 'UserResource deleted!');
+    }
+
+    public function friends($id): \Illuminate\Http\JsonResponse
+    {
+        $user = User::find($id);
+        if (is_null($user)) {
+            return $this->handleError('UserResource not found!');
+        }
+        return $this->handleResponse(new UserResource($user), 'UserResource retrieved.');
     }
 }
