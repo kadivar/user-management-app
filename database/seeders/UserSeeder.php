@@ -15,6 +15,12 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        User::user_factory()->count(10)->create();
+        User::user_factory()->count(10)->create()->each(function ($user) {
+            $total_users_count = User::all()->count();
+            if ($total_users_count >= 10) {
+                $random_friend = User::all()->random()->id;
+                $user->friends()->attach([$random_friend]);
+            }
+        });
     }
 }
